@@ -1,6 +1,10 @@
 from appJar import gui
 import serial
+import logging
+import Colorer
 
+log_level = logging.INFO
+FORMAT = '%(levelname)-8s %(message)s'
 
 # function called by pressing the buttons
 def press(btn):
@@ -26,12 +30,13 @@ def connect_uart():
         error=str(e)
         print(error)
         if error.find('PermissionError',len(error)):
-            print('Could not open Port ' +port)
+            logging.critical('Could not open Port ' +port)
         elif error.find('FileNotFoundError',len(error)):
-            print('Port ' +port+ ' don\'t exist')
+            logging.critical('Port ' +port+ ' don\'t exist')
 
 def read_vals():
     app.infoBox('Reset board','Please reset your conncted board after closing this message')
+    logging.info('Waiting for console....')
     print(get_available_cmds())
 
 def get_available_cmds():

@@ -37,6 +37,7 @@ def connect_uart():
 def read_vals():
     app.infoBox('Reset board','Please reset your conncted board after closing this message')
     logging.info('Waiting for console....')
+    wait_for('$')
     print(get_available_cmds())
 
 def get_available_cmds():
@@ -66,23 +67,53 @@ def get_available_cmds():
 
     return cmds
 
+def wait_for(char):
+    while True:
+        data_raw = ser.readline()
+        if data_raw:
+            data = data_raw.decode('utf-8').strip()
+            logging.debug(data)
+            if data == char:
+                logging.debug(char)
+                return data
+            if data == 'AT_ERROR':
+                return data
+            if data == 'AT_PARAM_ERROR'.encode('utf-8'):
+                return data
+            if data == 'AT_BUSY_ERROR':
+                return data
+            if data == 'AT_TEST_PARAM_OVERFLOW':
+                return data
+            if data == 'AT_NO_NETWORK_JOINED':
+                return data
+            if data == 'AT_RX_ERROR':
+                return data
+
+def reset_module():
+    ser.write(bytes('ATZ' + '\r\n', 'utf-8'))
+
+
+def write_cmd(cmd, ans):
+    logging.info(cmd.upper())
+    ser.write(bytes(cmd + '\r\n'.upper(), 'utf-8'))
+    if wait_for(ans) == ans:
+        pass
+    else:
+        logging.critical(wait_for(ans))
+
 def submit_vals():
     values = app.getAllEntries()
     for val in values:
         if (val != 'serial'):
             cmd = 'AT+'+ val + '=' + values[val]
-            send_cmd(cmd)
+            write_cmd(cmd,'OK')
     for i in ['ADR','NJM','CFM']:
         if app.getCheckBox(i):
             cmd = 'AT' + i + '=1'
         else:
             cmd = 'AT' + i + '=0'
-        send_cmd(cmd)
+        write_cmd(cmd,'OK')
 
-
-def send_cmd(cmd):
-    print((cmd + '\n\r').strip().upper())
-    #ser.write(bytes(cmd+'\n\r').strip().upper())
 
 ser=serial.Serial()
 

@@ -1,5 +1,6 @@
 from appJar import gui
 import serial
+import serial.tools.list_ports
 import logging
 import Colorer
 import time
@@ -20,7 +21,7 @@ def press(btn):
 
 def connect_uart():
     global ser
-    port = app.getEntry('serial')
+    port = app.getOptionBox('UART').split(' ')[0]
     print('Connecting to: '+ port)
     try:
         ser.port = port
@@ -117,12 +118,14 @@ def submit_vals():
 
 
 ser=serial.Serial()
+ports = (list(serial.tools.list_ports.comports()))
+
 
 app = gui('FMLR Configurator', '1024x400')
 app.setIcon('Logo.ico')
 
-app.addLabel('serial','UART',0,2)
-app.addEntry('serial', 0, 3)
+#app.addLabel('serial','UART',0,2)
+app.addLabelOptionBox('UART',ports, 0, 3)
 app.addButton('Connect',press,0,4)
 
 app.addLabel('deui', 'Device EUI:', 1, 0)
@@ -156,7 +159,7 @@ app.addEntry('port', 15, 3)
 app.addButton('Cancel', press, 21, 3)
 app.addButton('Submit', press, 21, 4)
 
-app.setEntryFocus('serial')
+#app.setEntryFocus('serial')
 
 app.go()
 

@@ -2,6 +2,7 @@ from appJar import gui
 import serial
 import logging
 import Colorer
+import time
 
 log_level = logging.INFO
 FORMAT = '%(levelname)-8s %(message)s'
@@ -158,3 +159,176 @@ app.addButton('Submit', press, 21, 4)
 app.setEntryFocus('serial')
 
 app.go()
+
+
+'''
+
+import serial
+import binascii
+import logging
+import Colorer
+import argparse
+import csv
+from enum import Enum
+import time
+
+class AgumentType(Enum):
+    FILE = 1
+
+type = 'AT'
+serial_timeout = .3
+
+ser = serial.Serial()
+if type == 'AT':
+    ser._baudrate = 115200
+else:
+    ser._baudrate = 57600
+ser.port = 'COM17'
+ser.timeout = serial_timeout
+
+log_level = logging.INFO
+FORMAT = '%(levelname)-8s %(message)s'
+
+
+def addparser_init():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i',
+                        help='input csv file with test cases: <command>, <response>')
+    parser.add_argument('--debug',
+                        action='store_true',
+                        help='set logging level to DEBUG')
+    return parser
+
+
+def parse_arguments(parser):
+    args = parser.parse_args()
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+    else:
+        logging.basicConfig(level=log_level, format=FORMAT)
+    if args.i:
+        return [AgumentType.FILE, args.i]
+
+
+def read_csv_file(file):
+    try:
+        f = open(file, 'rt')
+        return csv.reader(f)
+    except FileNotFoundError:
+        logging.critical(file + ': File not found')
+    except IndexError:
+        logging.critical(file + ': File not formated well')
+
+def parse_row(row):
+    try:
+        if row[0].strip()[:1] == '#':
+            pass
+        elif row[0] == 'pause':
+            pause(row[1])
+        elif row[0] == 'msg':
+            print('[MESSAGE]' + row[1].strip())
+        elif row[0] == 'wait':
+            wait_for(row[1].strip())
+        else:
+            if len(row) == 3:
+                ser.timeout = float(row[2].strip())
+            else:
+                ser.timeout = serial_timeout
+            test_command(row[0].strip(), row[1].strip())
+    except IndexError:
+        pass
+
+
+def parse_csv(reader):
+    for row in reader:
+        parse_row(row)
+
+
+def connect_serial():
+    try:
+        ser.open()
+        ser.flushInput()
+        ser.flushOutput()
+        return True
+    except serial.serialutil.SerialException as e:
+        logging.critical(e)
+        return False
+
+
+def test_command(cmd, ans):
+    logging.debug('[Test]: ' + cmd + ' -> ' + ans)
+    send_command(cmd)
+    resp = ser_read(ans)
+    if resp[0]:
+        logging.info('[' + cmd + ' -> ' + ans + ']-> ' + resp[1] + '-> PASSED')
+    else:
+        try:
+            logging.error('[' + cmd + ' -> ' + ans + ']-> ' + resp[1] + '-> FAILED')
+        except TypeError:
+            logging.critical('No valid response, is the modem running?')
+
+
+def pause(secs):
+    print('[Pause]: ' + secs +" sec")
+    time.sleep(float(secs))
+
+
+def send_command(cmd):
+    logging.debug('[TX]: ' + cmd)
+    cmd = cmd + '\r\n'
+    ser.flushOutput();
+    #ser.flushInput();
+    try:
+        ser.write(bytes(cmd, 'utf-8'))
+    except serial.serialutil.SerialException as e:
+        logging.critical(e)
+
+
+def wait_for(ans):
+    try:
+        print('[WAITING] for ' + ans)
+        while True:
+            data_raw = ser.readline()
+            if data_raw:
+                data = data_raw.decode('utf-8').strip()
+                logging.debug(data)
+                if data == ans:
+                    return 'found'
+    except serial.serialutil.SerialException as e:
+        logging.critical(e)
+
+
+def ser_read(ans):
+    try:
+        rx = ser.readline()
+        old_rx = rx
+        while rx:
+            if type == 'AT':
+                rx = rx.decode('utf-8').replace('\n', '').replace('\r', '')
+            else:
+                rx = rx.decode('utf-8').replace('\n', '').replace('\n', '')
+            logging.debug('[RX]: ' + rx)
+            if type == 'AT':
+                if rx == ans:
+                    return [True, rx]
+            else:
+                if rx.split(':')[0] == ans:
+                    return [True, rx]
+            if len(rx) > 0:
+                    old_rx = rx
+            rx = ser.readline()
+        return [False, old_rx]
+    except serial.serialutil.SerialException as e:
+        logging.critical(e)
+
+
+def main():
+    if connect_serial():
+        args = parse_arguments(addparser_init())
+        if args[0] == AgumentType.FILE:
+            reader = read_csv_file(args[1])
+            parse_csv(reader)
+
+if __name__ == "__main__":
+    main()
+'''

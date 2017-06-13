@@ -119,7 +119,7 @@ def submit_vals():
 ser=serial.Serial()
 
 app = gui('FMLR Configurator', '1024x400')
-app.setIcon('Graphicloads-100-Flat-Settings-3.ico')
+app.setIcon('Logo.ico')
 
 app.addLabel('serial','UART',0,2)
 app.addEntry('serial', 0, 3)

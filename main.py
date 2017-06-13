@@ -69,7 +69,8 @@ def get_available_cmds():
 
     return cmds
 
-def wait_for(char):
+def wait_for(char,timeout=5):
+    wait_time = time.time()+timeout
     while True:
         data_raw = ser.readline()
         if data_raw:
@@ -90,6 +91,8 @@ def wait_for(char):
                 return data
             if data == 'AT_RX_ERROR':
                 return data
+            if time.time() > wait_time:
+                return 'UART_TIMEOUT'
 
 def reset_module():
     ser.write(bytes('ATZ' + '\r\n', 'utf-8'))

@@ -38,10 +38,13 @@ def read_vals():
     app.infoBox('Reset board','Please reset your conncted board after closing this message')
     logging.info('Waiting for console....')
     wait_for('$')
-    print(get_available_cmds())
+    #print(get_available_cmds())
+    vals = ['deui', 'appeui','appkey','daddr','nwkskey','appskey','NJM', 'ADR', 'CFM', 'cycle', 'port']
+    for val in vals:
+
 
 def get_available_cmds():
-    send_cmd('AT?')
+    ('AT?')
 
     test='''<LF>AT+<CMD>         : Run <CMD>
 <LF>AT+<CMD>=<value> : Set the value
@@ -92,8 +95,16 @@ def wait_for(char):
 def reset_module():
     ser.write(bytes('ATZ' + '\r\n', 'utf-8'))
 
+def read_value(cmd,timeout):
+    ser.flushInput()
+    ser.flushOutput()
+    logging.info(cmd.upper())
+    ser.write(bytes(cmd + '\r\n'.upper(), 'utf-8'))
+
 
 def write_cmd(cmd, ans):
+    ser.flushInput()
+    ser.flushOutput()
     logging.info(cmd.upper())
     ser.write(bytes(cmd + '\r\n'.upper(), 'utf-8'))
     if wait_for(ans) == ans:

@@ -17,13 +17,15 @@ log_level = logging.INFO
 FORMAT = '%(levelname)-8s %(message)s'
 
 header = []
+vals_to_reformat = ['DEUI', 'DADDR', 'NWKSKEY', 'APPSKEY', 'APPEUI', 'APPKEY']
+
 
 serial_timeout = 0.1
 ser = serial.Serial()
 ser._baudrate = 115200
 ser.port = 'COM11'
 ser.timeout = serial_timeout
-
+reformat = False
 
 def addparser_init():
     parser = argparse.ArgumentParser()
@@ -34,15 +36,23 @@ def addparser_init():
     parser.add_argument('--debug',
                         action='store_true',
                         help='set logging level to DEBUG')
+    parser.add_argument('--reformat',
+                        action='store_true',
+                        help='reformat the EUIs, keys and adress')
     return parser
 
 
 def parse_arguments(parser):
+    global reformat
     args = parser.parse_args()
     if args.debug:
         logging.basicConfig(level=logging.DEBUG, format=FORMAT)
     else:
         logging.basicConfig(level=log_level, format=FORMAT)
+    if args.reformat:
+        reformat=True
+    else:
+       reformat=False
     if args.p:
         ser.port = args.p
         print(args.p)
@@ -84,6 +94,7 @@ def read_csv_file(file):
 
 
 def parse_row(row):
+    global reformat
     try:
         if row[0].strip()[:1] == '#':
             pass
@@ -91,7 +102,10 @@ def parse_row(row):
             logging.info('Waiting for console....')
             wait_for('$')
             for i in range(len(row)):
-                if row[i]:
+                if row[i] and header[i] in vals_to_reformat and reformat:
+                    val = list_hex(split_to_list(row[i].strip()))
+                    write_cmd('AT+' + header[i].strip() + '=' + val, 'OK')
+                elif row[i]:
                     write_cmd('AT+' + header[i].strip() + '=' + row[i].strip(), 'OK')
             logging.info('Comissioning done, please reset module')
     except IndexError:
@@ -101,6 +115,17 @@ def parse_row(row):
 def reset_module():
     ser.write(bytes('ATZ' + '\r\n', 'utf-8'))
 
+def split_to_list(input, no_of_signs=2):
+    return [input[i:i + no_of_signs] for i in range(0, len(input), no_of_signs)]
+
+
+def list_hex(input):
+    temp = ''
+    for i in input:
+        if input.index(i) > 0:
+            temp += ':'
+        temp += str(i)
+    return temp
 
 def write_cmd(cmd, ans):
     logging.info(cmd.upper())

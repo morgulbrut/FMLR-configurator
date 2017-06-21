@@ -18,6 +18,8 @@ def press(btn):
         connect_uart()
     elif btn == 'Submit':
         submit_vals()
+    elif btn == 'Test':
+        read_value('AT+DEUI=?',1)
 
 def connect_uart():
     global ser
@@ -191,6 +193,7 @@ app.addEntry('port', 15, 3)
 app.addButton('Cancel', press, 21, 3)
 app.addButton('Submit', press, 21, 4)
 
+app.addButton('Test',press,21,0)
 #app.setEntryFocus('serial')
 
 app.go()

@@ -181,7 +181,12 @@ app.addCheckBox('ADR',5,0)
 app.addLabel('adr', 'Tick for adaptive data rate',5,1)
 app.addCheckBox('CFM',4,2)
 app.addLabel('cfm', 'Tick for confirmated messages',4,3)
-
+'''
+app.addCheckBox('BAT',5,2)
+app.addLabel('bat', 'Tick for battery level',5,1)
+app.addCheckBox('ITEMP',6,0)
+app.addLabel('itemp', 'Tick for internal temperature sensor',6,1)
+'''
 app.addLabel('cycle', 'Application cycle time:', 15, 0)
 app.addEntry('cycle', 15, 1)
 

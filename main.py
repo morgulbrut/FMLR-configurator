@@ -157,7 +157,6 @@ ports = (list(serial.tools.list_ports.comports()))
 app = gui('FMLR Configurator', '1024x400')
 app.setIcon('Logo.ico')
 
-#app.addLabel('serial','UART',0,2)
 app.addLabelOptionBox('UART',ports, 0, 3)
 app.addButton('Connect',press,0,4)
 

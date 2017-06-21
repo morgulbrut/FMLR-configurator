@@ -103,14 +103,29 @@ def reset_module():
 def read_value(cmd,timeout):
     ser.flushInput()
     ser.flushOutput()
-    logging.info(cmd.upper())
+    print(cmd.upper())
     ser.write(bytes(cmd + '\r\n'.upper(), 'utf-8'))
+    return ser_read()
 
+def ser_read():
+    try:
+        rx = ser.readline()
+        rx_value=''
+        while rx:
+            rx = rx.decode('utf-8').replace('\n', '').replace('\r', '')
+            logging.debug('[RX]: ' + rx)
+            if rx == 'OK':
+                return(str(rx_value.split('$')[-3:-2][0]))
+            else:
+                rx_value  = rx_value + rx + '$'
+                rx = ser.readline()
+    except serial.serialutil.SerialException as e:
+        logging.critical(e)
 
 def write_cmd(cmd, ans):
     ser.flushInput()
     ser.flushOutput()
-    logging.info(cmd.upper())
+    print(cmd.upper())
     ser.write(bytes(cmd + '\r\n'.upper(), 'utf-8'))
     if wait_for(ans) == ans:
         pass
@@ -313,31 +328,6 @@ def wait_for(ans):
                     return 'found'
     except serial.serialutil.SerialException as e:
         logging.critical(e)
-
-
-def ser_read(ans):
-    try:
-        rx = ser.readline()
-        old_rx = rx
-        while rx:
-            if type == 'AT':
-                rx = rx.decode('utf-8').replace('\n', '').replace('\r', '')
-            else:
-                rx = rx.decode('utf-8').replace('\n', '').replace('\n', '')
-            logging.debug('[RX]: ' + rx)
-            if type == 'AT':
-                if rx == ans:
-                    return [True, rx]
-            else:
-                if rx.split(':')[0] == ans:
-                    return [True, rx]
-            if len(rx) > 0:
-                    old_rx = rx
-            rx = ser.readline()
-        return [False, old_rx]
-    except serial.serialutil.SerialException as e:
-        logging.critical(e)
-
 
 def main():
     if connect_serial():

@@ -38,16 +38,19 @@ def connect_uart():
 
 def read_vals():
     app.infoBox('Reset board','Please reset your conncted board after closing this message')
-    logging.info('Waiting for console....')
+    print('Waiting for console....')
     wait_for('$')
-    #print(get_available_cmds())
-    vals = ['deui', 'appeui','appkey','daddr','nwkskey','appskey','NJM', 'ADR', 'CFM', 'cycle', 'port']
-    for val in vals:
+    for val in ['deui', 'appeui','appkey','daddr','nwkskey','appskey', 'cycle', 'port']:
+        entry = read_value('AT+'+val.upper()+'=?',1)
+        print(entry)
+        app.setEntry(val,entry)
+    for val in ['NJM', 'ADR', 'CFM']:
+        entry = read_value('AT+'+val.upper()+'=?',1)
+        print(entry)
+
 
 
 def get_available_cmds():
-    ('AT?')
-
     test='''<LF>AT+<CMD>         : Run <CMD>
 <LF>AT+<CMD>=<value> : Set the value
 <LF>AT+<CMD>=?       : Get the value

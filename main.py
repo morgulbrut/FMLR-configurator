@@ -139,15 +139,14 @@ def write_cmd(cmd, ans):
 
 def submit_vals():
     values = app.getAllEntries()
-    for val in values:
-        if (val != 'serial'):
-            cmd = 'AT+'+ val + '=' + values[val]
-            write_cmd(cmd,'OK')
+    for val in ['deui', 'appeui','appkey','daddr','nwkskey','appskey', 'cycle', 'port']:
+        cmd = 'AT+'+ val.upper() + '=' + values[val]
+        write_cmd(cmd,'OK')
     for i in ['ADR','NJM','CFM']:
         if app.getCheckBox(i):
-            cmd = 'AT' + i + '=1'
+            cmd = 'AT+' + i + '=1'
         else:
-            cmd = 'AT' + i + '=0'
+            cmd = 'AT+' + i + '=0'
         write_cmd(cmd,'OK')
 
 

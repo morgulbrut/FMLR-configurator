@@ -1,0 +1,2 @@
+# FMLR-configurator
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bec183466a894542b0594ff3e4cd0424)](https://www.codacy.com/app/morgulbrut/FMLR-configurator?utm_source=github.com&utm_medium=referral&utm_content=morgulbrut/FMLR-configurator&utm_campaign=badger)
